@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eşya Tahmin Oyunu</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f3f3f3;
+        }
+        h1 {
+            color: #333;
+        }
+        .game-board {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            width: 90%;
+        }
+        .player-area {
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            padding: 10px;
+            width: 45%;
+            min-height: 360px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            background-color: #eee;
+        }
+        .object {
+            width: 80px;
+            height: 80px;
+            border: 1px solid #999;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            background-color: white;
+        }
+        .object img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        .selected {
+            outline: 3px solid yellow;
+        }
+        .explode {
+            outline: 3px solid gold;
+            box-shadow: 0px 0px 10px gold;
+            animation: explode 0.4s ease-in-out infinite;
+        }
+
+        @keyframes explode {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <h1>Eşya Tahmin Oyunu</h1>
+    <div class="instructions">
+        <p>Her oyuncu sırası ile 3 eşya seçer. Diğer oyuncu bu eşyaları tahmin etmeye çalışır. Doğru tahmin yapılırsa, eşya "patlar"!</p>
+    </div>
+    <div class="game-board">
+        <div class="player-area" id="player1">
+            <!-- Oyuncu 1'in objeleri -->
+        </div>
+        <div class="player-area" id="player2">
+            <!-- Oyuncu 2'nin objeleri -->
+        </div>
+    </div>
+    <button id="submit-selections">Seçimleri Kaydet</button>
+    <script>
+        const objectImages = [
+            "images/star.jpg",       // Yıldız
+            "images/apple.jpg",      // Elma
+            "images/doll.jpg",       // Oyuncak bebek
+            "images/ball.jpg",       // Top
+            "images/car.jpg",        // Araba
+            "images/heart.jpg",      // Kalp
+            "images/diamond.jpg",    // Elmas
+            "images/moon.jpg",       // Ay
+            "images/sun.jpg",        // Güneş
+            "images/cat.jpg",        // Kedi
+            "images/dog.jpg",        // Köpek
+            "images/candy.jpg"       // Şeker
+        ];
+
+        function createObject(imgSrc, objectId, parentArea) {
+            const objectDiv = document.createElement("div");
+            objectDiv.classList.add("object");
+            objectDiv.dataset.id = objectId;
+
+            const img = document.createElement("img");
+            img.src = imgSrc;
+            img.alt = `Obje-${objectId}`;
+            objectDiv.appendChild(img);
+
+            objectDiv.addEventListener("click", () => selectObject(objectDiv, parentArea));
+            return objectDiv;
+        }
+
+        function selectObject(element, playerArea) {
+            const selectedObjects = document.querySelectorAll(`#${playerArea.id} .selected`);
+            if (selectedObjects.length < 3 || element.classList.contains('selected')) {
+                element.classList.toggle("selected");
+            }
+        }
+
+        function setupGame() {
+            const player1Area = document.getElementById("player1");
+            const player2Area = document.getElementById("player2");
+
+            objectImages.forEach((imgSrc, index) => {
+                player1Area.appendChild(createObject(imgSrc, index + 1, player1Area));
+                player2Area.appendChild(createObject(imgSrc, index + 1, player2Area));
+            });
+        }
+
+        document.getElementById("submit-selections").addEventListener("click", () => {
+            const player1Selections = document.querySelectorAll("#player1 .selected");
+            const player2Selections = document.querySelectorAll("#player2 .selected");
+
+            if (player1Selections.length === 3 && player2Selections.length === 3) {
+                alert("Seçimler tamamlandı! Şimdi tahmin yapma sırası.");
+                handleGuessingPhase(player1Selections, player2Selections);
+            } else {
+                alert("Her oyuncu 3 obje seçmelidir!");
+            }
+        });
+
+        function handleGuessingPhase(player1Selections, player2Selections) {
+            // Tahmin mekanizması
+            player2Selections.forEach((obj) => {
+                const match = Array.from(player1Selections).find(sel => sel.dataset.id === obj.dataset.id);
+                if (match) {
+                    match.classList.add("explode");
+                }
+            });
+        }
+
+        setupGame();
+    </script>
+</body>
+</html>
