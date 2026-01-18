@@ -1,155 +1,360 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eşya Tahmin Oyunu</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background-color: #f3f3f3;
-        }
-        h1 {
-            color: #333;
-        }
-        .game-board {
-            display: flex;
-            justify-content: space-around;
-            margin-top: 20px;
-            width: 90%;
-        }
-        .player-area {
-            border: 1px solid #ccc;
-            border-radius: 10px;
-            padding: 10px;
-            width: 45%;
-            min-height: 360px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: center;
-            background-color: #eee;
-        }
-        .object {
-            width: 80px;
-            height: 80px;
-            border: 1px solid #999;
-            border-radius: 10px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            background-color: white;
-        }
-        .object img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 8px;
-        }
-        .selected {
-            outline: 3px solid yellow;
-        }
-        .explode {
-            outline: 3px solid gold;
-            box-shadow: 0px 0px 10px gold;
-            animation: explode 0.4s ease-in-out infinite;
-        }
+import React, { useState } from ‘react’;
+import { Star, Apple, Baby, Cherry, Candy, Gift, Heart, Moon, Sun, Flower, Trophy, Diamond, Crown, Rocket, Music, Camera, Palette, Gamepad, Coffee, Book, Umbrella, Watch, Zap, Cloud } from ‘lucide-react’;
 
-        @keyframes explode {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-    </style>
-</head>
-<body>
-    <h1>Eşya Tahmin Oyunu</h1>
-    <div class="instructions">
-        <p>Her oyuncu sırası ile 3 eşya seçer. Diğer oyuncu bu eşyaları tahmin etmeye çalışır. Doğru tahmin yapılırsa, eşya "patlar"!</p>
-    </div>
-    <div class="game-board">
-        <div class="player-area" id="player1">
-            <!-- Oyuncu 1'in objeleri -->
+const TahminOyunu = () => {
+const [oyunFazi, setOyunFazi] = useState(‘oyuncu1-hazirlik’);
+// Fazlar: oyuncu1-hazirlik, oyuncu2-hazirlik, oyun-baslangic, oyun-devam, oyun-bitti
+const [aktifOyuncu, setAktifOyuncu] = useState(1);
+const [oyuncu1Hedefler, setOyuncu1Hedefler] = useState([]);
+const [oyuncu2Hedefler, setOyuncu2Hedefler] = useState([]);
+const [oyuncu1Tahminler, setOyuncu1Tahminler] = useState([]);
+const [oyuncu2Tahminler, setOyuncu2Tahminler] = useState([]);
+const [oyuncu1Puan, setOyuncu1Puan] = useState(0);
+const [oyuncu2Puan, setOyuncu2Puan] = useState(0);
+const [hamle, setHamle] = useState(0);
+const [animasyon, setAnimasyon] = useState(null);
+
+const set1Objeler = [
+{ id: 1, icon: Star, isim: ‘Yıldız’, renk: ‘#FFD700’ },
+{ id: 2, icon: Apple, isim: ‘Elma’, renk: ‘#FF4444’ },
+{ id: 3, icon: Baby, isim: ‘Bebek’, renk: ‘#FFB6C1’ },
+{ id: 4, icon: Cherry, isim: ‘Kiraz’, renk: ‘#DC143C’ },
+{ id: 5, icon: Candy, isim: ‘Şeker’, renk: ‘#FF69B4’ },
+{ id: 6, icon: Gift, isim: ‘Hediye’, renk: ‘#9370DB’ },
+{ id: 7, icon: Heart, isim: ‘Kalp’, renk: ‘#FF1493’ },
+{ id: 8, icon: Moon, isim: ‘Ay’, renk: ‘#F0E68C’ },
+{ id: 9, icon: Sun, isim: ‘Güneş’, renk: ‘#FFA500’ },
+{ id: 10, icon: Flower, isim: ‘Çiçek’, renk: ‘#FF6B9D’ },
+{ id: 11, icon: Trophy, isim: ‘Kupa’, renk: ‘#DAA520’ },
+{ id: 12, icon: Diamond, isim: ‘Elmas’, renk: ‘#00CED1’ }
+];
+
+const set2Objeler = [
+{ id: 13, icon: Crown, isim: ‘Taç’, renk: ‘#FFD700’ },
+{ id: 14, icon: Rocket, isim: ‘Roket’, renk: ‘#FF6347’ },
+{ id: 15, icon: Music, isim: ‘Müzik’, renk: ‘#9370DB’ },
+{ id: 16, icon: Camera, isim: ‘Kamera’, renk: ‘#4169E1’ },
+{ id: 17, icon: Palette, isim: ‘Palet’, renk: ‘#FF69B4’ },
+{ id: 18, icon: Gamepad, isim: ‘Oyun’, renk: ‘#32CD32’ },
+{ id: 19, icon: Coffee, isim: ‘Kahve’, renk: ‘#8B4513’ },
+{ id: 20, icon: Book, isim: ‘Kitap’, renk: ‘#4682B4’ },
+{ id: 21, icon: Umbrella, isim: ‘Şemsiye’, renk: ‘#FF1493’ },
+{ id: 22, icon: Watch, isim: ‘Saat’, renk: ‘#C0C0C0’ },
+{ id: 23, icon: Zap, isim: ‘Şimşek’, renk: ‘#FFD700’ },
+{ id: 24, icon: Cloud, isim: ‘Bulut’, renk: ‘#87CEEB’ }
+];
+
+const hedefSec = (objeId) => {
+if (oyunFazi === ‘oyuncu1-hazirlik’ && oyuncu1Hedefler.length < 3 && !oyuncu1Hedefler.includes(objeId)) {
+setOyuncu1Hedefler([…oyuncu1Hedefler, objeId]);
+} else if (oyunFazi === ‘oyuncu2-hazirlik’ && oyuncu2Hedefler.length < 3 && !oyuncu2Hedefler.includes(objeId)) {
+setOyuncu2Hedefler([…oyuncu2Hedefler, objeId]);
+}
+};
+
+const oyuncuHazirla = () => {
+if (oyunFazi === ‘oyuncu1-hazirlik’ && oyuncu1Hedefler.length === 3) {
+setOyunFazi(‘oyuncu2-hazirlik’);
+}
+};
+
+const oyunuBaslat = () => {
+if (oyuncu2Hedefler.length === 3) {
+setOyunFazi(‘oyun-baslangic’);
+}
+};
+
+const oyunaBasla = () => {
+setOyunFazi(‘oyun-devam’);
+setAktifOyuncu(1);
+setHamle(1);
+};
+
+const kartSec = (objeId) => {
+if (oyunFazi !== ‘oyun-devam’) return;
+
+```
+if (aktifOyuncu === 1) {
+  if (oyuncu1Tahminler.includes(objeId)) return;
+  
+  const yeniTahminler = [...oyuncu1Tahminler, objeId];
+  setOyuncu1Tahminler(yeniTahminler);
+
+  if (oyuncu2Hedefler.includes(objeId)) {
+    setOyuncu1Puan(oyuncu1Puan + 1);
+    setAnimasyon({ tip: 'basarili', objeId, oyuncu: 1 });
+    setTimeout(() => setAnimasyon(null), 1500);
+  } else {
+    setAnimasyon({ tip: 'yanlis', objeId, oyuncu: 1 });
+    setTimeout(() => setAnimasyon(null), 1000);
+  }
+
+  setTimeout(() => {
+    if (yeniTahminler.length < 3) {
+      // Aynı oyuncu devam ediyor
+    } else {
+      if (hamle < 3) {
+        setAktifOyuncu(2);
+      } else {
+        setOyunFazi('oyun-bitti');
+      }
+    }
+  }, 1200);
+} else {
+  if (oyuncu2Tahminler.includes(objeId)) return;
+  
+  const yeniTahminler = [...oyuncu2Tahminler, objeId];
+  setOyuncu2Tahminler(yeniTahminler);
+
+  if (oyuncu1Hedefler.includes(objeId)) {
+    setOyuncu2Puan(oyuncu2Puan + 1);
+    setAnimasyon({ tip: 'basarili', objeId, oyuncu: 2 });
+    setTimeout(() => setAnimasyon(null), 1500);
+  } else {
+    setAnimasyon({ tip: 'yanlis', objeId, oyuncu: 2 });
+    setTimeout(() => setAnimasyon(null), 1000);
+  }
+
+  setTimeout(() => {
+    if (yeniTahminler.length < 3) {
+      // Aynı oyuncu devam ediyor
+    } else {
+      setHamle(hamle + 1);
+      setAktifOyuncu(1);
+      setOyuncu1Tahminler([]);
+      setOyuncu2Tahminler([]);
+    }
+  }, 1200);
+}
+```
+
+};
+
+const yenidenBaslat = () => {
+setOyunFazi(‘oyuncu1-hazirlik’);
+setAktifOyuncu(1);
+setOyuncu1Hedefler([]);
+setOyuncu2Hedefler([]);
+setOyuncu1Tahminler([]);
+setOyuncu2Tahminler([]);
+setOyuncu1Puan(0);
+setOyuncu2Puan(0);
+setHamle(0);
+setAnimasyon(null);
+};
+
+const ObjeKart = ({ obje, tiklama, secili, hedef, tahmin, gizli }) => {
+const Icon = obje.icon;
+const animasyonAktif = animasyon?.objeId === obje.id;
+const basarili = animasyonAktif && animasyon?.tip === ‘basarili’;
+const yanlis = animasyonAktif && animasyon?.tip === ‘yanlis’;
+
+```
+return (
+  <div
+    onClick={tiklama}
+    className={`relative w-24 h-24 rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all duration-300 shadow-lg ${
+      basarili ? 'bg-green-500 scale-110 animate-pulse' :
+      yanlis ? 'bg-red-500 scale-95' :
+      secili ? 'bg-gradient-to-br from-blue-400 to-blue-600 scale-105 shadow-xl' :
+      hedef ? 'bg-gradient-to-br from-purple-400 to-purple-600 scale-105 shadow-xl' :
+      tahmin ? 'bg-gray-400' :
+      'bg-gradient-to-br from-gray-100 to-gray-200 hover:scale-105 hover:shadow-2xl'
+    } border-4 ${secili || hedef ? 'border-yellow-300' : 'border-white'}`}
+  >
+    {basarili && (
+      <div className="absolute inset-0 flex items-center justify-center z-10">
+        <div className="text-5xl animate-bounce">✨</div>
+      </div>
+    )}
+    {yanlis && (
+      <div className="absolute inset-0 flex items-center justify-center z-10">
+        <div className="text-4xl">❌</div>
+      </div>
+    )}
+    {!gizli && (
+      <Icon 
+        size={48} 
+        style={{ color: basarili || yanlis ? '#fff' : secili || hedef ? '#fff' : obje.renk }}
+        strokeWidth={2.5}
+      />
+    )}
+    {!gizli && (
+      <span className={`text-xs mt-1 font-semibold ${secili || hedef ? 'text-white' : 'text-gray-700'}`}>
+        {obje.isim}
+      </span>
+    )}
+    {gizli && (
+      <div className="text-5xl">🎴</div>
+    )}
+  </div>
+);
+```
+
+};
+
+return (
+<div className="min-h-screen bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 p-6">
+<div className="max-w-7xl mx-auto">
+{/* Başlık ve Skor */}
+<div className="bg-white rounded-3xl shadow-2xl p-6 mb-6">
+<h1 className="text-5xl font-black text-center bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">
+⚡ SÜPER TAHMİN YARIŞMASI ⚡
+</h1>
+
+```
+      {(oyunFazi === 'oyun-devam' || oyunFazi === 'oyun-bitti') && (
+        <div className="flex justify-around items-center mt-6">
+          <div className={`text-center p-4 rounded-xl transition-all ${aktifOyuncu === 1 && oyunFazi === 'oyun-devam' ? 'bg-blue-100 scale-110' : 'bg-gray-100'}`}>
+            <div className="text-4xl mb-2">👤</div>
+            <div className="text-xl font-bold text-blue-600">OYUNCU 1</div>
+            <div className="text-4xl font-black text-blue-600 mt-2">{oyuncu1Puan}</div>
+          </div>
+          
+          <div className="text-center">
+            <div className="text-2xl font-bold text-gray-600">ROUND {hamle}/3</div>
+          </div>
+          
+          <div className={`text-center p-4 rounded-xl transition-all ${aktifOyuncu === 2 && oyunFazi === 'oyun-devam' ? 'bg-green-100 scale-110' : 'bg-gray-100'}`}>
+            <div className="text-4xl mb-2">👤</div>
+            <div className="text-xl font-bold text-green-600">OYUNCU 2</div>
+            <div className="text-4xl font-black text-green-600 mt-2">{oyuncu2Puan}</div>
+          </div>
         </div>
-        <div class="player-area" id="player2">
-            <!-- Oyuncu 2'nin objeleri -->
-        </div>
+      )}
     </div>
-    <button id="submit-selections">Seçimleri Kaydet</button>
-    <script>
-        const objectImages = [
-            "images/star.jpg",       // Yıldız
-            "images/apple.jpg",      // Elma
-            "images/doll.jpg",       // Oyuncak bebek
-            "images/ball.jpg",       // Top
-            "images/car.jpg",        // Araba
-            "images/heart.jpg",      // Kalp
-            "images/diamond.jpg",    // Elmas
-            "images/moon.jpg",       // Ay
-            "images/sun.jpg",        // Güneş
-            "images/cat.jpg",        // Kedi
-            "images/dog.jpg",        // Köpek
-            "images/candy.jpg"       // Şeker
-        ];
 
-        function createObject(imgSrc, objectId, parentArea) {
-            const objectDiv = document.createElement("div");
-            objectDiv.classList.add("object");
-            objectDiv.dataset.id = objectId;
+    {/* Oyuncu 1 Hazırlık */}
+    {oyunFazi === 'oyuncu1-hazirlik' && (
+      <div className="bg-white rounded-3xl shadow-2xl p-8">
+        <div className="text-center mb-6">
+          <h2 className="text-3xl font-bold text-blue-600 mb-2">👤 OYUNCU 1 HAZIRLIK</h2>
+          <p className="text-xl text-gray-700">3 hedef obje seçin ({oyuncu1Hedefler.length}/3)</p>
+          <p className="text-red-500 font-semibold mt-2">⚠️ Oyuncu 2 ekrana bakmasın!</p>
+        </div>
+        
+        <div className="grid grid-cols-6 gap-4 mb-6">
+          {set1Objeler.map((obje) => (
+            <ObjeKart
+              key={obje.id}
+              obje={obje}
+              tiklama={() => hedefSec(obje.id)}
+              secili={oyuncu1Hedefler.includes(obje.id)}
+            />
+          ))}
+        </div>
 
-            const img = document.createElement("img");
-            img.src = imgSrc;
-            img.alt = `Obje-${objectId}`;
-            objectDiv.appendChild(img);
+        {oyuncu1Hedefler.length === 3 && (
+          <div className="text-center">
+            <button
+              onClick={oyuncuHazirla}
+              className="px-12 py-4 bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-2xl font-bold text-2xl hover:from-blue-600 hover:to-blue-800 transition-all shadow-xl hover:scale-105"
+            >
+              Oyuncu 2'ye Geç →
+            </button>
+          </div>
+        )}
+      </div>
+    )}
 
-            objectDiv.addEventListener("click", () => selectObject(objectDiv, parentArea));
-            return objectDiv;
-        }
+    {/* Oyuncu 2 Hazırlık */}
+    {oyunFazi === 'oyuncu2-hazirlik' && (
+      <div className="bg-white rounded-3xl shadow-2xl p-8">
+        <div className="text-center mb-6">
+          <h2 className="text-3xl font-bold text-green-600 mb-2">👤 OYUNCU 2 HAZIRLIK</h2>
+          <p className="text-xl text-gray-700">3 hedef obje seçin ({oyuncu2Hedefler.length}/3)</p>
+          <p className="text-red-500 font-semibold mt-2">⚠️ Oyuncu 1 ekrana bakmasın!</p>
+        </div>
+        
+        <div className="grid grid-cols-6 gap-4 mb-6">
+          {set2Objeler.map((obje) => (
+            <ObjeKart
+              key={obje.id}
+              obje={obje}
+              tiklama={() => hedefSec(obje.id)}
+              secili={oyuncu2Hedefler.includes(obje.id)}
+            />
+          ))}
+        </div>
 
-        function selectObject(element, playerArea) {
-            const selectedObjects = document.querySelectorAll(`#${playerArea.id} .selected`);
-            if (selectedObjects.length < 3 || element.classList.contains('selected')) {
-                element.classList.toggle("selected");
-            }
-        }
+        {oyuncu2Hedefler.length === 3 && (
+          <div className="text-center">
+            <button
+              onClick={oyunuBaslat}
+              className="px-12 py-4 bg-gradient-to-r from-green-500 to-green-700 text-white rounded-2xl font-bold text-2xl hover:from-green-600 hover:to-green-800 transition-all shadow-xl hover:scale-105"
+            >
+              Hazır! →
+            </button>
+          </div>
+        )}
+      </div>
+    )}
 
-        function setupGame() {
-            const player1Area = document.getElementById("player1");
-            const player2Area = document.getElementById("player2");
+    {/* Oyun Başlangıç */}
+    {oyunFazi === 'oyun-baslangic' && (
+      <div className="bg-white rounded-3xl shadow-2xl p-12 text-center">
+        <div className="text-8xl mb-6 animate-bounce">🎮</div>
+        <h2 className="text-5xl font-black text-purple-600 mb-6">OYUN BAŞLIYOR!</h2>
+        <p className="text-2xl text-gray-700 mb-8">Her oyuncu sırayla rakibinin hedeflerini tahmin edecek</p>
+        <button
+          onClick={oyunaBasla}
+          className="px-16 py-6 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-2xl font-black text-3xl hover:from-purple-600 hover:to-pink-600 transition-all shadow-2xl hover:scale-110 animate-pulse"
+        >
+          BAŞLA! 🚀
+        </button>
+      </div>
+    )}
 
-            objectImages.forEach((imgSrc, index) => {
-                player1Area.appendChild(createObject(imgSrc, index + 1, player1Area));
-                player2Area.appendChild(createObject(imgSrc, index + 1, player2Area));
-            });
-        }
+    {/* Oyun Devam */}
+    {oyunFazi === 'oyun-devam' && (
+      <div className="bg-white rounded-3xl shadow-2xl p-8">
+        <div className="text-center mb-6">
+          <h2 className={`text-3xl font-bold mb-2 ${aktifOyuncu === 1 ? 'text-blue-600' : 'text-green-600'}`}>
+            {aktifOyuncu === 1 ? '👤 OYUNCU 1 SIRA SİZDE!' : '👤 OYUNCU 2 SIRA SİZDE!'}
+          </h2>
+          <p className="text-xl text-gray-700">
+            Rakibinizin hedeflerini tahmin edin ({aktifOyuncu === 1 ? oyuncu1Tahminler.length : oyuncu2Tahminler.length}/3)
+          </p>
+        </div>
+        
+        <div className="grid grid-cols-6 gap-4">
+          {(aktifOyuncu === 1 ? set2Objeler : set1Objeler).map((obje) => (
+            <ObjeKart
+              key={obje.id}
+              obje={obje}
+              tiklama={() => kartSec(obje.id)}
+              tahmin={aktifOyuncu === 1 ? oyuncu1Tahminler.includes(obje.id) : oyuncu2Tahminler.includes(obje.id)}
+            />
+          ))}
+        </div>
+      </div>
+    )}
 
-        document.getElementById("submit-selections").addEventListener("click", () => {
-            const player1Selections = document.querySelectorAll("#player1 .selected");
-            const player2Selections = document.querySelectorAll("#player2 .selected");
+    {/* Oyun Bitti */}
+    {oyunFazi === 'oyun-bitti' && (
+      <div className="bg-white rounded-3xl shadow-2xl p-12 text-center">
+        <div className="text-8xl mb-6">🏆</div>
+        <h2 className="text-5xl font-black text-purple-600 mb-6">
+          {oyuncu1Puan > oyuncu2Puan ? 'OYUNCU 1 KAZANDI!' : 
+           oyuncu2Puan > oyuncu1Puan ? 'OYUNCU 2 KAZANDI!' : 
+           'BERABERE!'}
+        </h2>
+        <div className="text-3xl font-bold text-gray-700 mb-8">
+          {oyuncu1Puan} - {oyuncu2Puan}
+        </div>
+        <button
+          onClick={yenidenBaslat}
+          className="px-12 py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-2xl font-bold text-2xl hover:from-purple-600 hover:to-pink-600 transition-all shadow-xl hover:scale-105"
+        >
+          🔄 Yeniden Oyna
+        </button>
+      </div>
+    )}
+  </div>
+</div>
+```
 
-            if (player1Selections.length === 3 && player2Selections.length === 3) {
-                alert("Seçimler tamamlandı! Şimdi tahmin yapma sırası.");
-                handleGuessingPhase(player1Selections, player2Selections);
-            } else {
-                alert("Her oyuncu 3 obje seçmelidir!");
-            }
-        });
+);
+};
 
-        function handleGuessingPhase(player1Selections, player2Selections) {
-            // Tahmin mekanizması
-            player2Selections.forEach((obj) => {
-                const match = Array.from(player1Selections).find(sel => sel.dataset.id === obj.dataset.id);
-                if (match) {
-                    match.classList.add("explode");
-                }
-            });
-        }
-
-        setupGame();
-    </script>
-</body>
-</html>
+export default TahminOyunu;
