@@ -1,360 +1,399 @@
-import React, { useState } from ‘react’;
-import { Star, Apple, Baby, Cherry, Candy, Gift, Heart, Moon, Sun, Flower, Trophy, Diamond, Crown, Rocket, Music, Camera, Palette, Gamepad, Coffee, Book, Umbrella, Watch, Zap, Cloud } from ‘lucide-react’;
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Süper Tahmin Yarışması</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div id="root"></div>
 
-const TahminOyunu = () => {
-const [oyunFazi, setOyunFazi] = useState(‘oyuncu1-hazirlik’);
-// Fazlar: oyuncu1-hazirlik, oyuncu2-hazirlik, oyun-baslangic, oyun-devam, oyun-bitti
-const [aktifOyuncu, setAktifOyuncu] = useState(1);
-const [oyuncu1Hedefler, setOyuncu1Hedefler] = useState([]);
-const [oyuncu2Hedefler, setOyuncu2Hedefler] = useState([]);
-const [oyuncu1Tahminler, setOyuncu1Tahminler] = useState([]);
-const [oyuncu2Tahminler, setOyuncu2Tahminler] = useState([]);
-const [oyuncu1Puan, setOyuncu1Puan] = useState(0);
-const [oyuncu2Puan, setOyuncu2Puan] = useState(0);
-const [hamle, setHamle] = useState(0);
-const [animasyon, setAnimasyon] = useState(null);
+    <script type="text/babel">
+        const { useState } = React;
 
-const set1Objeler = [
-{ id: 1, icon: Star, isim: ‘Yıldız’, renk: ‘#FFD700’ },
-{ id: 2, icon: Apple, isim: ‘Elma’, renk: ‘#FF4444’ },
-{ id: 3, icon: Baby, isim: ‘Bebek’, renk: ‘#FFB6C1’ },
-{ id: 4, icon: Cherry, isim: ‘Kiraz’, renk: ‘#DC143C’ },
-{ id: 5, icon: Candy, isim: ‘Şeker’, renk: ‘#FF69B4’ },
-{ id: 6, icon: Gift, isim: ‘Hediye’, renk: ‘#9370DB’ },
-{ id: 7, icon: Heart, isim: ‘Kalp’, renk: ‘#FF1493’ },
-{ id: 8, icon: Moon, isim: ‘Ay’, renk: ‘#F0E68C’ },
-{ id: 9, icon: Sun, isim: ‘Güneş’, renk: ‘#FFA500’ },
-{ id: 10, icon: Flower, isim: ‘Çiçek’, renk: ‘#FF6B9D’ },
-{ id: 11, icon: Trophy, isim: ‘Kupa’, renk: ‘#DAA520’ },
-{ id: 12, icon: Diamond, isim: ‘Elmas’, renk: ‘#00CED1’ }
-];
+        // Lucide ikonu yerine basit SVG iconlar kullanacağız
+        const Icon = ({ type, size = 48, color = "#000" }) => {
+            const icons = {
+                star: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
+                apple: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2"><path d="M12 20.94c1.5 0 2.75 1.06 4 1.06 3 0 6-8 6-12.22A4.91 4.91 0 0 0 17 5c-2.22 0-4 1.44-5 2-1-.56-2.78-2-5-2a4.9 4.9 0 0 0-5 4.78C2 14 5 22 8 22c1.25 0 2.5-1.06 4-1.06Z"/><path d="M10 2c1 .5 2 2 2 5"/></svg>,
+                baby: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2"><circle cx="12" cy="12" r="10"/><circle cx="9" cy="11" r="1"/><circle cx="15" cy="11" r="1"/><path d="M9 16c.5.5 2 1 3 1s2.5-.5 3-1"/></svg>,
+                cherry: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2"><circle cx="8" cy="18" r="4"/><circle cx="16" cy="18" r="4"/><path d="M8 14c0-4 4-8 8-8"/><path d="M16 6c0 2-2 4-4 4"/></svg>,
+                candy: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2"><path d="m9.5 7.5-2 2a4.95 4.95 0 1 0 7 7l2-2a4.95 4.95 0 1 0-7-7Z"/><path d="M14 6.5v10"/><path d="M10 7.5v10"/></svg>,
+                gift: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/></svg>,
+                heart: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>,
+                moon: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>,
+                sun: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>,
+                flower: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M12 16.5A4.5 4.5 0 1 1 7.5 12 4.5 4.5 0 1 1 12 7.5a4.5 4.5 0 1 1 4.5 4.5 4.5 4.5 0 1 1-4.5 4.5"/><path d="M12 7.5V9"/><path d="M7.5 12H9"/><path d="M16.5 12H15"/><path d="M12 16.5V15"/></svg>,
+                trophy: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>,
+                diamond: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2"><path d="M2.7 10.3a2.41 2.41 0 0 0 0 3.41l7.59 7.59a2.41 2.41 0 0 0 3.41 0l7.59-7.59a2.41 2.41 0 0 0 0-3.41l-7.59-7.59a2.41 2.41 0 0 0-3.41 0Z"/></svg>,
+                crown: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2"><path d="M2 4 12 14 22 4v13a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4z"/><circle cx="12" cy="2" r="1"/><circle cx="4" cy="4" r="1"/><circle cx="20" cy="4" r="1"/></svg>,
+                rocket: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg>,
+                music: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>,
+                camera: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>,
+                palette: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2"><circle cx="13.5" cy="6.5" r=".5" fill={color}/><circle cx="17.5" cy="10.5" r=".5" fill={color}/><circle cx="8.5" cy="7.5" r=".5" fill={color}/><circle cx="6.5" cy="12.5" r=".5" fill={color}/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>,
+                gamepad: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2"><line x1="6" x2="10" y1="12" y2="12"/><line x1="8" x2="8" y1="10" y2="14"/><line x1="15" x2="15.01" y1="13" y2="13"/><line x1="18" x2="18.01" y1="11" y2="11"/><rect width="20" height="12" x="2" y="6" rx="2"/></svg>,
+                coffee: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="2" y2="4"/><line x1="10" x2="10" y1="2" y2="4"/><line x1="14" x2="14" y1="2" y2="4"/></svg>,
+                book: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>,
+                umbrella: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2"><path d="M22 12a10.06 10.06 1 0 0-20 0Z"/><path d="M12 12v8a2 2 0 0 0 4 0"/><path d="M12 2v1"/></svg>,
+                watch: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2"><circle cx="12" cy="12" r="6"/><polyline points="12 10 12 12 13 13"/><path d="m16.13 7.66-.81-4.05a2 2 0 0 0-2-1.61h-2.68a2 2 0 0 0-2 1.61l-.78 4.05"/><path d="m7.88 16.36.8 4a2 2 0 0 0 2 1.61h2.72a2 2 0 0 0 2-1.61l.81-4.05"/></svg>,
+                zap: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>,
+                cloud: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
+            };
+            return icons[type] || null;
+        };
 
-const set2Objeler = [
-{ id: 13, icon: Crown, isim: ‘Taç’, renk: ‘#FFD700’ },
-{ id: 14, icon: Rocket, isim: ‘Roket’, renk: ‘#FF6347’ },
-{ id: 15, icon: Music, isim: ‘Müzik’, renk: ‘#9370DB’ },
-{ id: 16, icon: Camera, isim: ‘Kamera’, renk: ‘#4169E1’ },
-{ id: 17, icon: Palette, isim: ‘Palet’, renk: ‘#FF69B4’ },
-{ id: 18, icon: Gamepad, isim: ‘Oyun’, renk: ‘#32CD32’ },
-{ id: 19, icon: Coffee, isim: ‘Kahve’, renk: ‘#8B4513’ },
-{ id: 20, icon: Book, isim: ‘Kitap’, renk: ‘#4682B4’ },
-{ id: 21, icon: Umbrella, isim: ‘Şemsiye’, renk: ‘#FF1493’ },
-{ id: 22, icon: Watch, isim: ‘Saat’, renk: ‘#C0C0C0’ },
-{ id: 23, icon: Zap, isim: ‘Şimşek’, renk: ‘#FFD700’ },
-{ id: 24, icon: Cloud, isim: ‘Bulut’, renk: ‘#87CEEB’ }
-];
+        const TahminOyunu = () => {
+            const [oyunFazi, setOyunFazi] = useState('oyuncu1-hazirlik');
+            const [aktifOyuncu, setAktifOyuncu] = useState(1);
+            const [oyuncu1Hedefler, setOyuncu1Hedefler] = useState([]);
+            const [oyuncu2Hedefler, setOyuncu2Hedefler] = useState([]);
+            const [oyuncu1Tahminler, setOyuncu1Tahminler] = useState([]);
+            const [oyuncu2Tahminler, setOyuncu2Tahminler] = useState([]);
+            const [oyuncu1Puan, setOyuncu1Puan] = useState(0);
+            const [oyuncu2Puan, setOyuncu2Puan] = useState(0);
+            const [hamle, setHamle] = useState(0);
+            const [animasyon, setAnimasyon] = useState(null);
 
-const hedefSec = (objeId) => {
-if (oyunFazi === ‘oyuncu1-hazirlik’ && oyuncu1Hedefler.length < 3 && !oyuncu1Hedefler.includes(objeId)) {
-setOyuncu1Hedefler([…oyuncu1Hedefler, objeId]);
-} else if (oyunFazi === ‘oyuncu2-hazirlik’ && oyuncu2Hedefler.length < 3 && !oyuncu2Hedefler.includes(objeId)) {
-setOyuncu2Hedefler([…oyuncu2Hedefler, objeId]);
-}
-};
+            const set1Objeler = [
+                { id: 1, icon: 'star', isim: 'Yıldız', renk: '#FFD700' },
+                { id: 2, icon: 'apple', isim: 'Elma', renk: '#FF4444' },
+                { id: 3, icon: 'baby', isim: 'Bebek', renk: '#FFB6C1' },
+                { id: 4, icon: 'cherry', isim: 'Kiraz', renk: '#DC143C' },
+                { id: 5, icon: 'candy', isim: 'Şeker', renk: '#FF69B4' },
+                { id: 6, icon: 'gift', isim: 'Hediye', renk: '#9370DB' },
+                { id: 7, icon: 'heart', isim: 'Kalp', renk: '#FF1493' },
+                { id: 8, icon: 'moon', isim: 'Ay', renk: '#F0E68C' },
+                { id: 9, icon: 'sun', isim: 'Güneş', renk: '#FFA500' },
+                { id: 10, icon: 'flower', isim: 'Çiçek', renk: '#FF6B9D' },
+                { id: 11, icon: 'trophy', isim: 'Kupa', renk: '#DAA520' },
+                { id: 12, icon: 'diamond', isim: 'Elmas', renk: '#00CED1' }
+            ];
 
-const oyuncuHazirla = () => {
-if (oyunFazi === ‘oyuncu1-hazirlik’ && oyuncu1Hedefler.length === 3) {
-setOyunFazi(‘oyuncu2-hazirlik’);
-}
-};
+            const set2Objeler = [
+                { id: 13, icon: 'crown', isim: 'Taç', renk: '#FFD700' },
+                { id: 14, icon: 'rocket', isim: 'Roket', renk: '#FF6347' },
+                { id: 15, icon: 'music', isim: 'Müzik', renk: '#9370DB' },
+                { id: 16, icon: 'camera', isim: 'Kamera', renk: '#4169E1' },
+                { id: 17, icon: 'palette', isim: 'Palet', renk: '#FF69B4' },
+                { id: 18, icon: 'gamepad', isim: 'Oyun', renk: '#32CD32' },
+                { id: 19, icon: 'coffee', isim: 'Kahve', renk: '#8B4513' },
+                { id: 20, icon: 'book', isim: 'Kitap', renk: '#4682B4' },
+                { id: 21, icon: 'umbrella', isim: 'Şemsiye', renk: '#FF1493' },
+                { id: 22, icon: 'watch', isim: 'Saat', renk: '#C0C0C0' },
+                { id: 23, icon: 'zap', isim: 'Şimşek', renk: '#FFD700' },
+                { id: 24, icon: 'cloud', isim: 'Bulut', renk: '#87CEEB' }
+            ];
 
-const oyunuBaslat = () => {
-if (oyuncu2Hedefler.length === 3) {
-setOyunFazi(‘oyun-baslangic’);
-}
-};
+            const hedefSec = (objeId) => {
+                if (oyunFazi === 'oyuncu1-hazirlik' && oyuncu1Hedefler.length < 3 && !oyuncu1Hedefler.includes(objeId)) {
+                    setOyuncu1Hedefler([...oyuncu1Hedefler, objeId]);
+                } else if (oyunFazi === 'oyuncu2-hazirlik' && oyuncu2Hedefler.length < 3 && !oyuncu2Hedefler.includes(objeId)) {
+                    setOyuncu2Hedefler([...oyuncu2Hedefler, objeId]);
+                }
+            };
 
-const oyunaBasla = () => {
-setOyunFazi(‘oyun-devam’);
-setAktifOyuncu(1);
-setHamle(1);
-};
+            const oyuncuHazirla = () => {
+                if (oyunFazi === 'oyuncu1-hazirlik' && oyuncu1Hedefler.length === 3) {
+                    setOyunFazi('oyuncu2-hazirlik');
+                }
+            };
 
-const kartSec = (objeId) => {
-if (oyunFazi !== ‘oyun-devam’) return;
+            const oyunuBaslat = () => {
+                if (oyuncu2Hedefler.length === 3) {
+                    setOyunFazi('oyun-baslangic');
+                }
+            };
 
-```
-if (aktifOyuncu === 1) {
-  if (oyuncu1Tahminler.includes(objeId)) return;
-  
-  const yeniTahminler = [...oyuncu1Tahminler, objeId];
-  setOyuncu1Tahminler(yeniTahminler);
+            const oyunaBasla = () => {
+                setOyunFazi('oyun-devam');
+                setAktifOyuncu(1);
+                setHamle(1);
+            };
 
-  if (oyuncu2Hedefler.includes(objeId)) {
-    setOyuncu1Puan(oyuncu1Puan + 1);
-    setAnimasyon({ tip: 'basarili', objeId, oyuncu: 1 });
-    setTimeout(() => setAnimasyon(null), 1500);
-  } else {
-    setAnimasyon({ tip: 'yanlis', objeId, oyuncu: 1 });
-    setTimeout(() => setAnimasyon(null), 1000);
-  }
+            const kartSec = (objeId) => {
+                if (oyunFazi !== 'oyun-devam') return;
 
-  setTimeout(() => {
-    if (yeniTahminler.length < 3) {
-      // Aynı oyuncu devam ediyor
-    } else {
-      if (hamle < 3) {
-        setAktifOyuncu(2);
-      } else {
-        setOyunFazi('oyun-bitti');
-      }
-    }
-  }, 1200);
-} else {
-  if (oyuncu2Tahminler.includes(objeId)) return;
-  
-  const yeniTahminler = [...oyuncu2Tahminler, objeId];
-  setOyuncu2Tahminler(yeniTahminler);
+                if (aktifOyuncu === 1) {
+                    if (oyuncu1Tahminler.includes(objeId)) return;
+                    
+                    const yeniTahminler = [...oyuncu1Tahminler, objeId];
+                    setOyuncu1Tahminler(yeniTahminler);
 
-  if (oyuncu1Hedefler.includes(objeId)) {
-    setOyuncu2Puan(oyuncu2Puan + 1);
-    setAnimasyon({ tip: 'basarili', objeId, oyuncu: 2 });
-    setTimeout(() => setAnimasyon(null), 1500);
-  } else {
-    setAnimasyon({ tip: 'yanlis', objeId, oyuncu: 2 });
-    setTimeout(() => setAnimasyon(null), 1000);
-  }
+                    if (oyuncu2Hedefler.includes(objeId)) {
+                        setOyuncu1Puan(oyuncu1Puan + 1);
+                        setAnimasyon({ tip: 'basarili', objeId, oyuncu: 1 });
+                        setTimeout(() => setAnimasyon(null), 1500);
+                    } else {
+                        setAnimasyon({ tip: 'yanlis', objeId, oyuncu: 1 });
+                        setTimeout(() => setAnimasyon(null), 1000);
+                    }
 
-  setTimeout(() => {
-    if (yeniTahminler.length < 3) {
-      // Aynı oyuncu devam ediyor
-    } else {
-      setHamle(hamle + 1);
-      setAktifOyuncu(1);
-      setOyuncu1Tahminler([]);
-      setOyuncu2Tahminler([]);
-    }
-  }, 1200);
-}
-```
+                    setTimeout(() => {
+                        if (yeniTahminler.length < 3) {
+                            // Aynı oyuncu devam ediyor
+                        } else {
+                            if (hamle < 3) {
+                                setAktifOyuncu(2);
+                            } else {
+                                setOyunFazi('oyun-bitti');
+                            }
+                        }
+                    }, 1200);
+                } else {
+                    if (oyuncu2Tahminler.includes(objeId)) return;
+                    
+                    const yeniTahminler = [...oyuncu2Tahminler, objeId];
+                    setOyuncu2Tahminler(yeniTahminler);
 
-};
+                    if (oyuncu1Hedefler.includes(objeId)) {
+                        setOyuncu2Puan(oyuncu2Puan + 1);
+                        setAnimasyon({ tip: 'basarili', objeId, oyuncu: 2 });
+                        setTimeout(() => setAnimasyon(null), 1500);
+                    } else {
+                        setAnimasyon({ tip: 'yanlis', objeId, oyuncu: 2 });
+                        setTimeout(() => setAnimasyon(null), 1000);
+                    }
 
-const yenidenBaslat = () => {
-setOyunFazi(‘oyuncu1-hazirlik’);
-setAktifOyuncu(1);
-setOyuncu1Hedefler([]);
-setOyuncu2Hedefler([]);
-setOyuncu1Tahminler([]);
-setOyuncu2Tahminler([]);
-setOyuncu1Puan(0);
-setOyuncu2Puan(0);
-setHamle(0);
-setAnimasyon(null);
-};
+                    setTimeout(() => {
+                        if (yeniTahminler.length < 3) {
+                            // Aynı oyuncu devam ediyor
+                        } else {
+                            setHamle(hamle + 1);
+                            setAktifOyuncu(1);
+                            setOyuncu1Tahminler([]);
+                            setOyuncu2Tahminler([]);
+                        }
+                    }, 1200);
+                }
+            };
 
-const ObjeKart = ({ obje, tiklama, secili, hedef, tahmin, gizli }) => {
-const Icon = obje.icon;
-const animasyonAktif = animasyon?.objeId === obje.id;
-const basarili = animasyonAktif && animasyon?.tip === ‘basarili’;
-const yanlis = animasyonAktif && animasyon?.tip === ‘yanlis’;
+            const yenidenBaslat = () => {
+                setOyunFazi('oyuncu1-hazirlik');
+                setAktifOyuncu(1);
+                setOyuncu1Hedefler([]);
+                setOyuncu2Hedefler([]);
+                setOyuncu1Tahminler([]);
+                setOyuncu2Tahminler([]);
+                setOyuncu1Puan(0);
+                setOyuncu2Puan(0);
+                setHamle(0);
+                setAnimasyon(null);
+            };
 
-```
-return (
-  <div
-    onClick={tiklama}
-    className={`relative w-24 h-24 rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all duration-300 shadow-lg ${
-      basarili ? 'bg-green-500 scale-110 animate-pulse' :
-      yanlis ? 'bg-red-500 scale-95' :
-      secili ? 'bg-gradient-to-br from-blue-400 to-blue-600 scale-105 shadow-xl' :
-      hedef ? 'bg-gradient-to-br from-purple-400 to-purple-600 scale-105 shadow-xl' :
-      tahmin ? 'bg-gray-400' :
-      'bg-gradient-to-br from-gray-100 to-gray-200 hover:scale-105 hover:shadow-2xl'
-    } border-4 ${secili || hedef ? 'border-yellow-300' : 'border-white'}`}
-  >
-    {basarili && (
-      <div className="absolute inset-0 flex items-center justify-center z-10">
-        <div className="text-5xl animate-bounce">✨</div>
-      </div>
-    )}
-    {yanlis && (
-      <div className="absolute inset-0 flex items-center justify-center z-10">
-        <div className="text-4xl">❌</div>
-      </div>
-    )}
-    {!gizli && (
-      <Icon 
-        size={48} 
-        style={{ color: basarili || yanlis ? '#fff' : secili || hedef ? '#fff' : obje.renk }}
-        strokeWidth={2.5}
-      />
-    )}
-    {!gizli && (
-      <span className={`text-xs mt-1 font-semibold ${secili || hedef ? 'text-white' : 'text-gray-700'}`}>
-        {obje.isim}
-      </span>
-    )}
-    {gizli && (
-      <div className="text-5xl">🎴</div>
-    )}
-  </div>
-);
-```
+            const ObjeKart = ({ obje, tiklama, secili, hedef, tahmin, gizli }) => {
+                const animasyonAktif = animasyon?.objeId === obje.id;
+                const basarili = animasyonAktif && animasyon?.tip === 'basarili';
+                const yanlis = animasyonAktif && animasyon?.tip === 'yanlis';
 
-};
+                return (
+                    <div
+                        onClick={tiklama}
+                        className={`relative w-24 h-24 rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all duration-300 shadow-lg ${
+                            basarili ? 'bg-green-500 scale-110 animate-pulse' :
+                            yanlis ? 'bg-red-500 scale-95' :
+                            secili ? 'bg-gradient-to-br from-blue-400 to-blue-600 scale-105 shadow-xl' :
+                            hedef ? 'bg-gradient-to-br from-purple-400 to-purple-600 scale-105 shadow-xl' :
+                            tahmin ? 'bg-gray-400' :
+                            'bg-gradient-to-br from-gray-100 to-gray-200 hover:scale-105 hover:shadow-2xl'
+                        } border-4 ${secili || hedef ? 'border-yellow-300' : 'border-white'}`}
+                    >
+                        {basarili && (
+                            <div className="absolute inset-0 flex items-center justify-center z-10">
+                                <div className="text-5xl animate-bounce">✨</div>
+                            </div>
+                        )}
+                        {yanlis && (
+                            <div className="absolute inset-0 flex items-center justify-center z-10">
+                                <div className="text-4xl">❌</div>
+                            </div>
+                        )}
+                        {!gizli && (
+                            <Icon 
+                                type={obje.icon}
+                                size={48} 
+                                color={basarili || yanlis ? '#fff' : secili || hedef ? '#fff' : obje.renk}
+                            />
+                        )}
+                        {!gizli && (
+                            <span className={`text-xs mt-1 font-semibold ${secili || hedef ? 'text-white' : 'text-gray-700'}`}>
+                                {obje.isim}
+                            </span>
+                        )}
+                        {gizli && (
+                            <div className="text-5xl">🎴</div>
+                        )}
+                    </div>
+                );
+            };
 
-return (
-<div className="min-h-screen bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 p-6">
-<div className="max-w-7xl mx-auto">
-{/* Başlık ve Skor */}
-<div className="bg-white rounded-3xl shadow-2xl p-6 mb-6">
-<h1 className="text-5xl font-black text-center bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">
-⚡ SÜPER TAHMİN YARIŞMASI ⚡
-</h1>
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 p-6">
+                    <div className="max-w-7xl mx-auto">
+                        {/* Başlık ve Skor */}
+                        <div className="bg-white rounded-3xl shadow-2xl p-6 mb-6">
+                            <h1 className="text-5xl font-black text-center bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">
+                                ⚡ SÜPER TAHMİN YARIŞMASI ⚡
+                            </h1>
+                            
+                            {(oyunFazi === 'oyun-devam' || oyunFazi === 'oyun-bitti') && (
+                                <div className="flex justify-around items-center mt-6">
+                                    <div className={`text-center p-4 rounded-xl transition-all ${aktifOyuncu === 1 && oyunFazi === 'oyun-devam' ? 'bg-blue-100 scale-110' : 'bg-gray-100'}`}>
+                                        <div className="text-4xl mb-2">👤</div>
+                                        <div className="text-xl font-bold text-blue-600">OYUNCU 1</div>
+                                        <div className="text-4xl font-black text-blue-600 mt-2">{oyuncu1Puan}</div>
+                                    </div>
+                                    
+                                    <div className="text-center">
+                                        <div className="text-2xl font-bold text-gray-600">ROUND {hamle}/3</div>
+                                    </div>
+                                    
+                                    <div className={`text-center p-4 rounded-xl transition-all ${aktifOyuncu === 2 && oyunFazi === 'oyun-devam' ? 'bg-green-100 scale-110' : 'bg-gray-100'}`}>
+                                        <div className="text-4xl mb-2">👤</div>
+                                        <div className="text-xl font-bold text-green-600">OYUNCU 2</div>
+                                        <div className="text-4xl font-black text-green-600 mt-2">{oyuncu2Puan}</div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
 
-```
-      {(oyunFazi === 'oyun-devam' || oyunFazi === 'oyun-bitti') && (
-        <div className="flex justify-around items-center mt-6">
-          <div className={`text-center p-4 rounded-xl transition-all ${aktifOyuncu === 1 && oyunFazi === 'oyun-devam' ? 'bg-blue-100 scale-110' : 'bg-gray-100'}`}>
-            <div className="text-4xl mb-2">👤</div>
-            <div className="text-xl font-bold text-blue-600">OYUNCU 1</div>
-            <div className="text-4xl font-black text-blue-600 mt-2">{oyuncu1Puan}</div>
-          </div>
-          
-          <div className="text-center">
-            <div className="text-2xl font-bold text-gray-600">ROUND {hamle}/3</div>
-          </div>
-          
-          <div className={`text-center p-4 rounded-xl transition-all ${aktifOyuncu === 2 && oyunFazi === 'oyun-devam' ? 'bg-green-100 scale-110' : 'bg-gray-100'}`}>
-            <div className="text-4xl mb-2">👤</div>
-            <div className="text-xl font-bold text-green-600">OYUNCU 2</div>
-            <div className="text-4xl font-black text-green-600 mt-2">{oyuncu2Puan}</div>
-          </div>
-        </div>
-      )}
-    </div>
+                        {/* Oyuncu 1 Hazırlık */}
+                        {oyunFazi === 'oyuncu1-hazirlik' && (
+                            <div className="bg-white rounded-3xl shadow-2xl p-8">
+                                <div className="text-center mb-6">
+                                    <h2 className="text-3xl font-bold text-blue-600 mb-2">👤 OYUNCU 1 HAZIRLIK</h2>
+                                    <p className="text-xl text-gray-700">3 hedef obje seçin ({oyuncu1Hedefler.length}/3)</p>
+                                    <p className="text-red-500 font-semibold mt-2">⚠️ Oyuncu 2 ekrana bakmasın!</p>
+                                </div>
+                                
+                                <div className="grid grid-cols-6 gap-4 mb-6">
+                                    {set1Objeler.map((obje) => (
+                                        <ObjeKart
+                                            key={obje.id}
+                                            obje={obje}
+                                            tiklama={() => hedefSec(obje.id)}
+                                            secili={oyuncu1Hedefler.includes(obje.id)}
+                                        />
+                                    ))}
+                                </div>
 
-    {/* Oyuncu 1 Hazırlık */}
-    {oyunFazi === 'oyuncu1-hazirlik' && (
-      <div className="bg-white rounded-3xl shadow-2xl p-8">
-        <div className="text-center mb-6">
-          <h2 className="text-3xl font-bold text-blue-600 mb-2">👤 OYUNCU 1 HAZIRLIK</h2>
-          <p className="text-xl text-gray-700">3 hedef obje seçin ({oyuncu1Hedefler.length}/3)</p>
-          <p className="text-red-500 font-semibold mt-2">⚠️ Oyuncu 2 ekrana bakmasın!</p>
-        </div>
-        
-        <div className="grid grid-cols-6 gap-4 mb-6">
-          {set1Objeler.map((obje) => (
-            <ObjeKart
-              key={obje.id}
-              obje={obje}
-              tiklama={() => hedefSec(obje.id)}
-              secili={oyuncu1Hedefler.includes(obje.id)}
-            />
-          ))}
-        </div>
+                                {oyuncu1Hedefler.length === 3 && (
+                                    <div className="text-center">
+                                        <button
+                                            onClick={oyuncuHazirla}
+                                            className="px-12 py-4 bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-2xl font-bold text-2xl hover:from-blue-600 hover:to-blue-800 transition-all shadow-xl hover:scale-105"
+                                        >
+                                            Oyuncu 2'ye Geç →
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
 
-        {oyuncu1Hedefler.length === 3 && (
-          <div className="text-center">
-            <button
-              onClick={oyuncuHazirla}
-              className="px-12 py-4 bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-2xl font-bold text-2xl hover:from-blue-600 hover:to-blue-800 transition-all shadow-xl hover:scale-105"
-            >
-              Oyuncu 2'ye Geç →
-            </button>
-          </div>
-        )}
-      </div>
-    )}
+                                                {/* Oyuncu 2 Hazırlık */}
+                        {oyunFazi === 'oyuncu2-hazirlik' && (
+                            <div className="bg-white rounded-3xl shadow-2xl p-8">
+                                <div className="text-center mb-6">
+                                    <h2 className="text-3xl font-bold text-green-600 mb-2">👤 OYUNCU 2 HAZIRLIK</h2>
+                                    <p className="text-xl text-gray-700">3 hedef obje seçin ({oyuncu2Hedefler.length}/3)</p>
+                                    <p className="text-red-500 font-semibold mt-2">⚠️ Oyuncu 1 ekrana bakmasın!</p>
+                                </div>
+                                
+                                <div className="grid grid-cols-6 gap-4 mb-6">
+                                    {set2Objeler.map((obje) => (
+                                        <ObjeKart
+                                            key={obje.id}
+                                            obje={obje}
+                                            tiklama={() => hedefSec(obje.id)}
+                                            secili={oyuncu2Hedefler.includes(obje.id)}
+                                        />
+                                    ))}
+                                </div>
 
-    {/* Oyuncu 2 Hazırlık */}
-    {oyunFazi === 'oyuncu2-hazirlik' && (
-      <div className="bg-white rounded-3xl shadow-2xl p-8">
-        <div className="text-center mb-6">
-          <h2 className="text-3xl font-bold text-green-600 mb-2">👤 OYUNCU 2 HAZIRLIK</h2>
-          <p className="text-xl text-gray-700">3 hedef obje seçin ({oyuncu2Hedefler.length}/3)</p>
-          <p className="text-red-500 font-semibold mt-2">⚠️ Oyuncu 1 ekrana bakmasın!</p>
-        </div>
-        
-        <div className="grid grid-cols-6 gap-4 mb-6">
-          {set2Objeler.map((obje) => (
-            <ObjeKart
-              key={obje.id}
-              obje={obje}
-              tiklama={() => hedefSec(obje.id)}
-              secili={oyuncu2Hedefler.includes(obje.id)}
-            />
-          ))}
-        </div>
+                                {oyuncu2Hedefler.length === 3 && (
+                                    <div className="text-center">
+                                        <button
+                                            onClick={oyunuBaslat}
+                                            className="px-12 py-4 bg-gradient-to-r from-green-500 to-green-700 text-white rounded-2xl font-bold text-2xl hover:from-green-600 hover:to-green-800 transition-all shadow-xl hover:scale-105"
+                                        >
+                                            Hazır! →
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
 
-        {oyuncu2Hedefler.length === 3 && (
-          <div className="text-center">
-            <button
-              onClick={oyunuBaslat}
-              className="px-12 py-4 bg-gradient-to-r from-green-500 to-green-700 text-white rounded-2xl font-bold text-2xl hover:from-green-600 hover:to-green-800 transition-all shadow-xl hover:scale-105"
-            >
-              Hazır! →
-            </button>
-          </div>
-        )}
-      </div>
-    )}
+                        {/* Oyun Başlangıç */}
+                        {oyunFazi === 'oyun-baslangic' && (
+                            <div className="bg-white rounded-3xl shadow-2xl p-12 text-center">
+                                <div className="text-8xl mb-6 animate-bounce">🎮</div>
+                                <h2 className="text-5xl font-black text-purple-600 mb-6">OYUN BAŞLIYOR!</h2>
+                                <p className="text-2xl text-gray-700 mb-8">Her oyuncu sırayla rakibinin hedeflerini tahmin edecek</p>
+                                <button
+                                    onClick={oyunaBasla}
+                                    className="px-16 py-6 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-2xl font-black text-3xl hover:from-purple-600 hover:to-pink-600 transition-all shadow-2xl hover:scale-110 animate-pulse"
+                                >
+                                    BAŞLA! 🚀
+                                </button>
+                            </div>
+                        )}
 
-    {/* Oyun Başlangıç */}
-    {oyunFazi === 'oyun-baslangic' && (
-      <div className="bg-white rounded-3xl shadow-2xl p-12 text-center">
-        <div className="text-8xl mb-6 animate-bounce">🎮</div>
-        <h2 className="text-5xl font-black text-purple-600 mb-6">OYUN BAŞLIYOR!</h2>
-        <p className="text-2xl text-gray-700 mb-8">Her oyuncu sırayla rakibinin hedeflerini tahmin edecek</p>
-        <button
-          onClick={oyunaBasla}
-          className="px-16 py-6 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-2xl font-black text-3xl hover:from-purple-600 hover:to-pink-600 transition-all shadow-2xl hover:scale-110 animate-pulse"
-        >
-          BAŞLA! 🚀
-        </button>
-      </div>
-    )}
+                        {/* Oyun Devam */}
+                        {oyunFazi === 'oyun-devam' && (
+                            <div className="bg-white rounded-3xl shadow-2xl p-8">
+                                <div className="text-center mb-6">
+                                    <h2 className={`text-3xl font-bold mb-2 ${aktifOyuncu === 1 ? 'text-blue-600' : 'text-green-600'}`}>
+                                        {aktifOyuncu === 1 ? '👤 OYUNCU 1 SIRA SİZDE!' : '👤 OYUNCU 2 SIRA SİZDE!'}
+                                    </h2>
+                                    <p className="text-xl text-gray-700">
+                                        Rakibinizin hedeflerini tahmin edin ({aktifOyuncu === 1 ? oyuncu1Tahminler.length : oyuncu2Tahminler.length}/3)
+                                    </p>
+                                </div>
+                                
+                                <div className="grid grid-cols-6 gap-4">
+                                    {(aktifOyuncu === 1 ? set2Objeler : set1Objeler).map((obje) => (
+                                        <ObjeKart
+                                            key={obje.id}
+                                            obje={obje}
+                                            tiklama={() => kartSec(obje.id)}
+                                            tahmin={aktifOyuncu === 1 ? oyuncu1Tahminler.includes(obje.id) : oyuncu2Tahminler.includes(obje.id)}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        )}
 
-    {/* Oyun Devam */}
-    {oyunFazi === 'oyun-devam' && (
-      <div className="bg-white rounded-3xl shadow-2xl p-8">
-        <div className="text-center mb-6">
-          <h2 className={`text-3xl font-bold mb-2 ${aktifOyuncu === 1 ? 'text-blue-600' : 'text-green-600'}`}>
-            {aktifOyuncu === 1 ? '👤 OYUNCU 1 SIRA SİZDE!' : '👤 OYUNCU 2 SIRA SİZDE!'}
-          </h2>
-          <p className="text-xl text-gray-700">
-            Rakibinizin hedeflerini tahmin edin ({aktifOyuncu === 1 ? oyuncu1Tahminler.length : oyuncu2Tahminler.length}/3)
-          </p>
-        </div>
-        
-        <div className="grid grid-cols-6 gap-4">
-          {(aktifOyuncu === 1 ? set2Objeler : set1Objeler).map((obje) => (
-            <ObjeKart
-              key={obje.id}
-              obje={obje}
-              tiklama={() => kartSec(obje.id)}
-              tahmin={aktifOyuncu === 1 ? oyuncu1Tahminler.includes(obje.id) : oyuncu2Tahminler.includes(obje.id)}
-            />
-          ))}
-        </div>
-      </div>
-    )}
+                        {/* Oyun Bitti */}
+                        {oyunFazi === 'oyun-bitti' && (
+                            <div className="bg-white rounded-3xl shadow-2xl p-12 text-center">
+                                <div className="text-8xl mb-6">🏆</div>
+                                <h2 className="text-5xl font-black text-purple-600 mb-6">
+                                    {oyuncu1Puan > oyuncu2Puan ? 'OYUNCU 1 KAZANDI!' : 
+                                     oyuncu2Puan > oyuncu1Puan ? 'OYUNCU 2 KAZANDI!' : 
+                                     'BERABERE!'}
+                                </h2>
+                                <div className="text-3xl font-bold text-gray-700 mb-8">
+                                    {oyuncu1Puan} - {oyuncu2Puan}
+                                </div>
+                                <button
+                                    onClick={yenidenBaslat}
+                                    className="px-12 py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-2xl font-bold text-2xl hover:from-purple-600 hover:to-pink-600 transition-all shadow-xl hover:scale-105"
+                                >
+                                    🔄 Yeniden Oyna
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
 
-    {/* Oyun Bitti */}
-    {oyunFazi === 'oyun-bitti' && (
-      <div className="bg-white rounded-3xl shadow-2xl p-12 text-center">
-        <div className="text-8xl mb-6">🏆</div>
-        <h2 className="text-5xl font-black text-purple-600 mb-6">
-          {oyuncu1Puan > oyuncu2Puan ? 'OYUNCU 1 KAZANDI!' : 
-           oyuncu2Puan > oyuncu1Puan ? 'OYUNCU 2 KAZANDI!' : 
-           'BERABERE!'}
-        </h2>
-        <div className="text-3xl font-bold text-gray-700 mb-8">
-          {oyuncu1Puan} - {oyuncu2Puan}
-        </div>
-        <button
-          onClick={yenidenBaslat}
-          className="px-12 py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-2xl font-bold text-2xl hover:from-purple-600 hover:to-pink-600 transition-all shadow-xl hover:scale-105"
-        >
-          🔄 Yeniden Oyna
-        </button>
-      </div>
-    )}
-  </div>
-</div>
-```
-
-);
-};
-
-export default TahminOyunu;
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<TahminOyunu />);
+    </script>
+</body>
+</html>
+​​​​​​​​​​​​​​​​
