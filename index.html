@@ -128,12 +128,10 @@
                         setOyuncu1Puan(yeniPuan);
                         setAnimasyon({ tip: 'basarili', objeId, oyuncu: 1 });
                         
-                        // Patlama efekti
                         setPatlamaEfekti(true);
                         setTimeout(() => setPatlamaEfekti(false), 2000);
                         setTimeout(() => setAnimasyon(null), 1500);
 
-                        // Oyun bitti mi kontrol et
                         setTimeout(() => {
                             if (yeniPuan === 3) {
                                 setOyunFazi('oyun-bitti');
@@ -159,12 +157,10 @@
                         setOyuncu2Puan(yeniPuan);
                         setAnimasyon({ tip: 'basarili', objeId, oyuncu: 2 });
                         
-                        // Patlama efekti
                         setPatlamaEfekti(true);
                         setTimeout(() => setPatlamaEfekti(false), 2000);
                         setTimeout(() => setAnimasyon(null), 1500);
 
-                        // Oyun bitti mi kontrol et
                         setTimeout(() => {
                             if (yeniPuan === 3) {
                                 setOyunFazi('oyun-bitti');
@@ -239,7 +235,6 @@
 
             return (
                 <div className="min-h-screen bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 p-6 relative">
-                    {/* Patlama Efekti */}
                     {patlamaEfekti && (
                         <div className="fixed inset-0 z-50 pointer-events-none flex items-center justify-center">
                             <div className="relative">
@@ -264,7 +259,6 @@
                     )}
 
                     <div className="max-w-7xl mx-auto">
-                        {/* Başlık ve Skor */}
                         <div className="bg-white rounded-3xl shadow-2xl p-6 mb-6">
                             <h1 className="text-5xl font-black text-center bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">
                                 ⚡ SÜPER TAHMİN YARIŞMASI ⚡
@@ -291,9 +285,9 @@
                             )}
                         </div>
 
-                        {/* Oyuncu 1 Hazırlık */}
                         {oyunFazi === 'oyuncu1-hazirlik' && (
-                            <div className="text-center mb-6">
+                            <div className="bg-white rounded-3xl shadow-2xl p-8">
+                                <div className="text-center mb-6">
                                     <h2 className="text-3xl font-bold text-blue-600 mb-2">👤 OYUNCU 1 HAZIRLIK</h2>
                                     <p className="text-xl text-gray-700">3 hedef obje seçin ({oyuncu1Hedefler.length}/3)</p>
                                     <p className="text-red-500 font-semibold mt-2">⚠️ Oyuncu 2 ekrana bakmasın!</p>
@@ -323,7 +317,6 @@
                             </div>
                         )}
 
-                        {/* Oyuncu 2 Hazırlık */}
                         {oyunFazi === 'oyuncu2-hazirlik' && (
                             <div className="bg-white rounded-3xl shadow-2xl p-8">
                                 <div className="text-center mb-6">
@@ -356,7 +349,6 @@
                             </div>
                         )}
 
-                        {/* Oyun Başlangıç */}
                         {oyunFazi === 'oyun-baslangic' && (
                             <div className="bg-white rounded-3xl shadow-2xl p-12 text-center">
                                 <div className="text-8xl mb-6 animate-bounce">🎮</div>
@@ -371,7 +363,6 @@
                             </div>
                         )}
 
-                        {/* Oyun Devam */}
                         {oyunFazi === 'oyun-devam' && (
                             <div className="bg-white rounded-3xl shadow-2xl p-8">
                                 <div className="text-center mb-6">
@@ -396,7 +387,6 @@
                             </div>
                         )}
 
-                        {/* Oyun Bitti */}
                         {oyunFazi === 'oyun-bitti' && (
                             <div className="bg-white rounded-3xl shadow-2xl p-12 text-center">
                                 <div className="text-8xl mb-6 animate-bounce">🏆</div>
